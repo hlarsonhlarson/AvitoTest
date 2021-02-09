@@ -6,4 +6,6 @@ sudo -u postgres createuser --interactive
 sudo -u postgres createdb {username}
 #after creating new user to connect
 sudo -i -u {username}
+#add library for postgres
+go get -u github.com/lib/pq
 
