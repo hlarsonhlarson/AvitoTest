@@ -73,12 +73,7 @@ func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (env *Env) addAdv(w http.ResponseWriter, r *http.Request){
-	adv, err := models.JsonLoader(w, r)
-	if err != nil{
-		log.Println(err)
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
+	var adv models.Advert = models.JsonLoader()
 	adv.Created_at = time.Now()
 	id, response := env.adverts.AddItem(adv)
 	if response == 400{
