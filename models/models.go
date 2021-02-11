@@ -4,6 +4,9 @@ import (
 	"database/sql"
 )
 
+const BAD_REQUEST := 400
+const GOOD_REQUEST := 200
+
 type Book struct {
 	Isbn   string
 	Title  string
@@ -41,4 +44,18 @@ func (m BookModel) All() ([]Book, error) {
 	}
 
 	return bks, nil
+}
+
+func (m BookModel) AddItem(price, name, description string, photo string[]) (int, int){
+	sqlStatement := `
+	INSERT INTO books (price, name, description, photo)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id`
+	id := 0
+	err = db.QueryRow(sqlStatement, price, name, description, photo)
+	if err != nil{
+		fmt.Println(err)
+		return nil, BAD_REQUEST
+	}
+	return id, GOOD_REQUEST
 }

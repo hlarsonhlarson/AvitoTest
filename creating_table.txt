@@ -1,0 +1,6 @@
+CREATE TABLE adverts(
+id SERIAL PRIMARY KEY,
+price FLOAT,
+name TEXT,
+description TEXT,
+photo TEXT[]);
