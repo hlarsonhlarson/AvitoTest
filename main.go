@@ -65,7 +65,10 @@ func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, adv := range advs {
-		fmt.Fprintf(w, "%f, %s, %s", adv.Price, adv.Name, adv.Description)
+		fmt.Fprintf(w, "%f, %s, %s\n", adv.Price, adv.Name, adv.Description)
+		for _, elem := range adv.Photo{
+			fmt.Println(elem)
+		}
 	}
 }
 

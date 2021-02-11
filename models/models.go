@@ -15,7 +15,7 @@ type Advert struct {
 	Price  float32
 	Name string
 	Description string
-	Photo []uint8
+	Photo []string
 	Created_at time.Time
 }
 
@@ -37,7 +37,7 @@ func (m AdvertModel) All() ([]Advert, error) {
 	for rows.Next() {
 		var adv Advert
 
-		err := rows.Scan(&adv.ID, &adv.Price, &adv.Name, &adv.Description, &adv.Photo, &adv.Created_at)
+		err := rows.Scan(&adv.ID, &adv.Price, &adv.Name, &adv.Description, pq.Array(&adv.Photo), &adv.Created_at)
 		if err != nil {
 			return nil, err
 		}
