@@ -1,1 +1,1 @@
-curl -H "Content-Type: application/json" --data '{"Price":154.4,"Name":"FirstName","Description":"Hi I am description","Photo":["photo1","photo2"]}' localhost:3000/addadv
+curl -H "Content-Type: application/json" --data '{"Price":154.4,"Name":"FirstName","Description":"Hi I am description","Photo":["https://pyxis.nymag.com/v1/imgs/9ef/e47/5515cb84df2ff0179bbc35708ab9d47b02-15-link.rsquare.w330.jpg","https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/35/OoT3D_Link_Model.png/revision/latest/scale-to-width-down/269?cb=20200813033949"]}' localhost:3000/addadv
