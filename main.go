@@ -79,7 +79,6 @@ func (env *Env) addAdv(w http.ResponseWriter, r *http.Request){
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	adv.Created_at = time.Now()
 	id, response := env.adverts.AddItem(adv)
 	if response == 400{
 		log.Println("badRequest")

@@ -1,20 +1,17 @@
 package models
 
 import(
-    "fmt"
-    "encoding/json"
     "net/http"
+    "time"
 )
 
 func JsonLoader(rw http.ResponseWriter, request *http.Request) (Advert, error){
-	decoder := json.NewDecoder(request.Body)
-
 	var adv Advert
 
-	err := decoder.Decode(&adv)
+	err := DecodeJSONBody(rw, request, &adv)
 	if err != nil{
 		return adv, err
 	}
-	fmt.Println("HI")
+	adv.Created_at = time.Now()
 	return adv, nil
 }
