@@ -6,6 +6,7 @@ import(
     "time"
     "fmt"
     "errors"
+    "unicode/utf8"
 )
 
 func IsUrl(str string) bool {
@@ -44,11 +45,32 @@ func CheckPhoto(photos []string) error{
 	return nil
 }
 
+func CheckLen(str string, length int) bool{
+	if utf8.RuneCountInString(str) > length{
+		return false
+	}
+	return true
+}
+
+func CheckNameDescription(name, description string) error{
+	if CheckLen(name, 200) == false{
+		return errors.New("Too long name")
+	}
+	if CheckLen(description, 1000) == false{
+		return errors.New("Too long description")
+	}
+	return nil
+}
+
 
 func JsonLoader(rw http.ResponseWriter, request *http.Request) (Advert, error){
 	var adv Advert
 
 	err := DecodeJSONBody(rw, request, &adv)
+	if err != nil{
+		return adv, err
+	}
+	err = CheckNameDescription(adv.Name, adv.Description)
 	if err != nil{
 		return adv, err
 	}
