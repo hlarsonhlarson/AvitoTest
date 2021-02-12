@@ -56,8 +56,14 @@ func CheckNameDescription(name, description string) error{
 	if CheckLen(name, 200) == false{
 		return errors.New("Too long name")
 	}
+	if utf8.RuneCountInString(name) == 0{
+		return errors.New("No name")
+	}
 	if CheckLen(description, 1000) == false{
 		return errors.New("Too long description")
+	}
+	if utf8.RuneCountInString(description) == 0{
+		return errors.New("No description")
 	}
 	return nil
 }
