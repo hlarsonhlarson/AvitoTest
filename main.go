@@ -6,7 +6,6 @@ import(
 	"log"
 	"net/http"
 	"AvitoTest/models"
-	"time"
 
 	_ "github.com/lib/pq"
 
