@@ -23,13 +23,13 @@ type Env struct {
     // Replace the reference to models.AdvertModel with an interface
     // describing its methods instead.
 	adverts interface {
-		All() ([]models.Advert, error)
+		All(id int) ([]models.Advert, error)
 		AddItem(adv models.Advert) (int, int)
+		GetAdv(id int) (models.Advert, error)
 	}
 }
 
 func ApiWorker() {
-
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 	"password=%s dbname=%s sslmode=disable",
 	host, port, user, password, dbname)
@@ -50,12 +50,13 @@ func ApiWorker() {
 
 	http.HandleFunc("/adverts", env.advertsIndex)
 	http.HandleFunc("/addadv", env.addAdv)
+	http.HandleFunc("/addget", env.advertGet)
 	http.ListenAndServe(":3000", nil)
 }
 
 func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
     // Execute the SQL query by calling the All() method.
-	advs, err := env.adverts.All()
+	advs, err := env.adverts.All(3)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
@@ -63,11 +64,18 @@ func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, adv := range advs {
-		fmt.Fprintf(w, "%f, %s, %s\n", adv.Price, adv.Name, adv.Description)
-		for _, elem := range adv.Photo{
-			fmt.Println(elem)
-		}
+		fmt.Fprintf(w, "%f, %s, %s\n", adv.Price, adv.Name, adv.Photo[0])
 	}
+}
+
+func (env *Env) advertGet(w http.ResponseWriter, r *http.Request) {
+	adv, err := env.adverts.GetAdv(2)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	fmt.Fprintf(w, "%s, %f, %s\n", adv.Name, adv.Price, adv.Photo[0])
 }
 
 func (env *Env) addAdv(w http.ResponseWriter, r *http.Request){

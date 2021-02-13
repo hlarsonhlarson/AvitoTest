@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 	"fmt"
+	"errors"
 	pq "github.com/lib/pq"
 )
 
@@ -25,8 +26,12 @@ type AdvertModel struct {
 }
 
 // Use a method on the custom AdvertModel type to run the SQL query.
-func (m AdvertModel) All() ([]Advert, error) {
-	rows, err := m.DB.Query("SELECT * FROM adverts")
+func (m AdvertModel) All(id int) ([]Advert, error) {
+	sqlStatement := `SELECT name, price, photo, id
+	FROM adverts `
+	sqlStatement += `WHERE id > $1 `
+	sqlStatement += `LIMIT 10;`
+	rows, err := m.DB.Query(sqlStatement, id)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +42,7 @@ func (m AdvertModel) All() ([]Advert, error) {
 	for rows.Next() {
 		var adv Advert
 
-		err := rows.Scan(&adv.ID, &adv.Price, &adv.Name, &adv.Description, pq.Array(&adv.Photo), &adv.Created_at)
+		err := rows.Scan(&adv.Name, &adv.Price, pq.Array(&adv.Photo), &adv.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -50,6 +55,20 @@ func (m AdvertModel) All() ([]Advert, error) {
 
 	return advs, nil
 }
+
+
+func (m AdvertModel) GetAdv(id int) (Advert, error) {
+	var adv Advert
+	sqlStatement := `SELECT name, price, photo FROM adverts WHERE id=$1;`
+	row := m.DB.QueryRow(sqlStatement, id)
+	switch err := row.Scan(&adv.Name, &adv.Price, pq.Array(&adv.Photo)); err {
+	case sql.ErrNoRows:
+		return adv, errors.New("No rows were returned!")
+	default:
+		return adv, err
+	}
+}
+
 
 func (m AdvertModel) AddItem(adv Advert) (int, int) {
 	sqlStatement := `
