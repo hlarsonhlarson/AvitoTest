@@ -57,10 +57,13 @@ func ApiWorker() {
 
 type AdvertSaver struct{
 	Advs []models.Advert
+	firstAdv models.Advert
+	lastAdv models.Advert
 }
 
 func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
     // Execute the SQL query by calling the All() method.
+    	fmt.Println(r)
     	var adv models.Advert
 	adv.ID = 1100
 	advs, err := env.adverts.GetPage(adv, "DESC", "price")
@@ -71,6 +74,7 @@ func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	var output AdvertSaver
 	output.Advs = advs
+	output.
 	t := template.Must(template.ParseFiles("./templates/page.html"))
 	err = t.Execute(w, output)
 
