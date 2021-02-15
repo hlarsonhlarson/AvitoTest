@@ -5,6 +5,7 @@ import(
 	"fmt"
 	"log"
 	"net/http"
+	"html/template"
 	"AvitoTest/models"
 
 	_ "github.com/lib/pq"
@@ -23,7 +24,7 @@ type Env struct {
     // Replace the reference to models.AdvertModel with an interface
     // describing its methods instead.
 	adverts interface {
-		All(id int) ([]models.Advert, error)
+		GetPage(prevAdv models.Advert, orderType string, typeSorting string) ([]models.Advert, error)
 		AddItem(adv models.Advert) (int, int)
 		GetAdv(id int) (models.Advert, error)
 	}
@@ -54,18 +55,25 @@ func ApiWorker() {
 	http.ListenAndServe(":3000", nil)
 }
 
+type AdvertSaver struct{
+	Advs []models.Advert
+}
+
 func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
     // Execute the SQL query by calling the All() method.
-	advs, err := env.adverts.All(3)
+    	var adv models.Advert
+	adv.ID = 1100
+	advs, err := env.adverts.GetPage(adv, "DESC", "price")
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	var output AdvertSaver
+	output.Advs = advs
+	t := template.Must(template.ParseFiles("./templates/page.html"))
+	err = t.Execute(w, output)
 
-	for _, adv := range advs {
-		fmt.Fprintf(w, "%f, %s, %s\n", adv.Price, adv.Name, adv.Photo[0])
-	}
 }
 
 func (env *Env) advertGet(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +83,7 @@ func (env *Env) advertGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	fmt.Fprintf(w, "%s, %f, %s\n", adv.Name, adv.Price, adv.Photo[0])
+	fmt.Fprintf(w, "%d, %s, %f, %s\n", adv.ID, adv.Name, adv.Price, adv.Photo[0])
 }
 
 func (env *Env) addAdv(w http.ResponseWriter, r *http.Request){

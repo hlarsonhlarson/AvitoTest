@@ -25,12 +25,30 @@ type AdvertModel struct {
 	DB *sql.DB
 }
 
-// Use a method on the custom AdvertModel type to run the SQL query.
-func (m AdvertModel) All(id int) ([]Advert, error) {
+func (m AdvertModel) GetPage(prevAdv Advert, orderType string, typeSorting string) ([]Advert, error) {
+	id := prevAdv.ID
 	sqlStatement := `SELECT name, price, photo, id
 	FROM adverts `
-	sqlStatement += `WHERE id > $1 `
-	sqlStatement += `LIMIT 10;`
+	switch {
+	case orderType == "ASC" && typeSorting == "price":
+		sqlStatement += `WHERE id > $1 
+		ORDER BY price,id ASC
+		LIMIT 10;`
+	case orderType == "ASC" && typeSorting == "time":
+		sqlStatement += `WHERE id > $1 
+		ORDER BY time,id ASC
+		LIMIT 10;`
+	case orderType == "DESC" && typeSorting == "price":
+		sqlStatement += `WHERE id < $1
+		ORDER BY price DESC 
+		LIMIT 10;`
+	case orderType == "DESC" && typeSorting == "time":
+		sqlStatement += `WHERE id < $1 
+		ORDER BY time,id DESC
+		LIMIT 10;`
+	default:
+		return nil, errors.New("Incorect page statement")
+	}
 	rows, err := m.DB.Query(sqlStatement, id)
 	if err != nil {
 		return nil, err
