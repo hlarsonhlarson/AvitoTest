@@ -87,3 +87,18 @@ func JsonLoader(rw http.ResponseWriter, request *http.Request) (Advert, error){
 	adv.Created_at = time.Now()
 	return adv, nil
 }
+
+type Parameters struct{
+	SortingOrder string
+	SortingParameter string
+}
+
+func JsonLoadParams(rw http.ResponseWriter, request *http.Request) (Parameters, error){
+	var par Parameters
+	err := DecodeJSONBody(rw, request, &par)
+
+	if err != nil{
+		return par, err
+	}
+	return par, nil
+}

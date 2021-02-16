@@ -20,15 +20,24 @@ const (
 	dbname   = "AvitoTest"
 )
 
+type AdvertSaver struct{
+	Advs []models.Advert
+	firstAdv models.Advert
+	lastAdv models.Advert
+}
+
 type Env struct {
-    // Replace the reference to models.AdvertModel with an interface
-    // describing its methods instead.
+	// Replace the reference to models.AdvertModel with an interface
+	// describing its methods instead.
 	adverts interface {
 		GetPage(prevAdv models.Advert, orderType string, typeSorting string) ([]models.Advert, error)
 		AddItem(adv models.Advert) (int, int)
 		GetAdv(id int) (models.Advert, error)
 	}
+	Params models.Parameters
+	AdvSave AdvertSaver
 }
+
 
 func ApiWorker() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
@@ -44,29 +53,39 @@ func ApiWorker() {
 		panic(err)
 	}
 	// Initalise Env with a models.AdvertModel instance (which in turn wraps
-    // the connection pool).
+	// the connection pool).
 	env := &Env{
 		adverts: models.AdvertModel{DB: db},
 	}
+	env.Params.SortingOrder = "ASC"
+	env.Params.SortingParameter = "price"
 
+	http.HandleFunc("/setparams", env.advertsPassParams)
 	http.HandleFunc("/adverts", env.advertsIndex)
 	http.HandleFunc("/addadv", env.addAdv)
 	http.HandleFunc("/addget", env.advertGet)
 	http.ListenAndServe(":3000", nil)
 }
 
-type AdvertSaver struct{
-	Advs []models.Advert
-	firstAdv models.Advert
-	lastAdv models.Advert
+func (env *Env) advertsPassParams(w http.ResponseWriter, r *http.Request){
+	params_tmp,err := models.JsonLoadParams(w, r)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	env.Params.SortingOrder = params_tmp.SortingOrder
+	env.Params.SortingParameter = params_tmp.SortingParameter
 }
 
+
 func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
-    // Execute the SQL query by calling the All() method.
-    	fmt.Println(r)
-    	var adv models.Advert
+	// Execute the SQL query by calling the All() method.
+	fmt.Println(r.URL.RawQuery)
+	var adv models.Advert
 	adv.ID = 1100
-	advs, err := env.adverts.GetPage(adv, "DESC", "price")
+	advs, err := env.adverts.GetPage(adv, env.Params.SortingOrder, env.Params.SortingParameter)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
@@ -74,7 +93,6 @@ func (env *Env) advertsIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	var output AdvertSaver
 	output.Advs = advs
-	output.
 	t := template.Must(template.ParseFiles("./templates/page.html"))
 	err = t.Execute(w, output)
 
