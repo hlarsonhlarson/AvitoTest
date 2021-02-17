@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  avito:
+    build: ./
+    container_name: "avito"
+    command: ./wait-for-postgres.sh db ./avito
+    ports:
+      - 3000:3000
+    depends_on:
+            - db
+    environment:
+            POSTGRES_USER: "postgres"
+            POSTGRES_PASSWORD: "123"
+            POSTGRES_DB: "postgres"
+            POSTGRES_HOST: "db_1"
+            POSTGRES_PORT: "5432"

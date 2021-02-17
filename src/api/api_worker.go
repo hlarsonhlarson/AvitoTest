@@ -8,17 +8,10 @@ import(
 	"strconv"
 	"html/template"
 	"AvitoTest/models"
+	"os"
 
 	_ "github.com/lib/pq"
 
-)
-
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "AvitoTest"
-	password = "123"
-	dbname   = "AvitoTest"
 )
 
 type Env struct {
@@ -36,8 +29,13 @@ type AdvertWraper struct{
 
 
 func ApiWorker() {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-	"password=%s dbname=%s sslmode=disable",
+	host := os.Getenv("POSTGRES_HOST")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbname := os.Getenv("POSTGRES_DB")
+	user := os.Getenv("POSTGRES_USER")
+	port := os.Getenv("POSTGRES_PORT")
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+	"password=%s dbname=%s sslmode=disabled",
 	host, port, user, password, dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {

@@ -1,0 +1,1 @@
+curl -H "Content-Type: application/json" --data '{"SortingOrder": "ASC", "SortingParameter": "price"}' localhost:3000/setparams
