@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	  <title>{{.Name}}</title>
+  </head>
+  <body>
+	<table>
+		<tr><td>Name: {{.Name}}</td></tr>
+		{{ range.Photo}}
+		<tr><td><img src={{.}}></td></tr>
+		{{end}}
+		<tr><td>Price: {{.Price}}$</td></tr>
+		<tr><td>{{.Description}}</td></tr>
+	</table>
+  </body>
+</html>

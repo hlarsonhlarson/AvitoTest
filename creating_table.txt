@@ -1,8 +1,8 @@
-CREATE TABLE adverts(
+CREATE TABLE IF NOT EXISTS adverts(
 id SERIAL PRIMARY KEY,
 price FLOAT,
 name TEXT,
 description TEXT,
 photo TEXT[],
-created_at TIME);
+created_at TIMESTAMP);
 

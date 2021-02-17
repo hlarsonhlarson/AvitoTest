@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 	"fmt"
+	"errors"
 	pq "github.com/lib/pq"
 )
 
@@ -19,14 +20,28 @@ type Advert struct {
 	Created_at time.Time
 }
 
-// Create a custom AdvertModel type which wraps the sql.DB connection pool.
 type AdvertModel struct {
 	DB *sql.DB
 }
 
-// Use a method on the custom AdvertModel type to run the SQL query.
-func (m AdvertModel) All() ([]Advert, error) {
-	rows, err := m.DB.Query("SELECT * FROM adverts")
+func (m AdvertModel) GetPage(offset int, orderType string, typeSorting string) ([]Advert, error) {
+	sqlStatement := `SELECT name, price, photo, id
+	FROM adverts `
+	switch {
+	case orderType == "ASC" && typeSorting == "price":
+		sqlStatement += `ORDER BY price,id `
+	case orderType == "ASC" && typeSorting == "time":
+		sqlStatement += `ORDER BY time,id `
+	case orderType == "DESC" && typeSorting == "price":
+		sqlStatement += `ORDER BY price DESC, id `
+	case orderType == "DESC" && typeSorting == "time":
+		sqlStatement += `ORDER BY time DESC,id `
+	default:
+		return nil, errors.New("Incorect page statement")
+	}
+	sqlStatement += `LIMIT 10
+	OFFSET $1;`
+	rows, err := m.DB.Query(sqlStatement, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +52,7 @@ func (m AdvertModel) All() ([]Advert, error) {
 	for rows.Next() {
 		var adv Advert
 
-		err := rows.Scan(&adv.ID, &adv.Price, &adv.Name, &adv.Description, pq.Array(&adv.Photo), &adv.Created_at)
+		err := rows.Scan(&adv.Name, &adv.Price, pq.Array(&adv.Photo), &adv.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -50,6 +65,42 @@ func (m AdvertModel) All() ([]Advert, error) {
 
 	return advs, nil
 }
+
+
+func (m AdvertModel) GetAdv(id int, fields []string) (Advert, error) {
+	var adv Advert
+	photos := 0
+	descr := 0
+	sqlStatement := `SELECT name, price, photo `
+	for _, elem := range fields{
+		if elem == "photos"{
+			photos = 1
+		}else if elem == "description"{
+			sqlStatement += `, description `
+			descr += 1
+		}
+	}
+	sqlStatement += `FROM adverts WHERE id=$1;`
+	row := m.DB.QueryRow(sqlStatement, id)
+	var err error
+	if descr == 1{
+		err = row.Scan(&adv.Name, &adv.Price, pq.Array(&adv.Photo), &adv.Description)
+	}else{
+		err = row.Scan(&adv.Name, &adv.Price, pq.Array(&adv.Photo))
+	}
+	switch err {
+	case sql.ErrNoRows:
+		return adv, errors.New("No rows were returned!")
+	default:
+		if photos == 0{
+				tmp_photo := make([]string, 0)
+				tmp_photo = append(tmp_photo, adv.Photo[0])
+				adv.Photo = tmp_photo
+			}
+		return adv, err
+	}
+}
+
 
 func (m AdvertModel) AddItem(adv Advert) (int, int) {
 	sqlStatement := `
